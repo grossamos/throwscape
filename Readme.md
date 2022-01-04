@@ -15,7 +15,7 @@ No configuration files or complicated setup procedures required.
 
 ### Current ToDo
 - [ ] Create basic answer for tcp requests
-- [ ] Create Configuration framework (additional module)
+- [x] Create Configuration framework (additional module)
 - [ ] Add concurrency model
 - [ ] Add basic HTTP/1.1 support:
     - [ ] Parsing of request 
