@@ -12,6 +12,7 @@ No configuration files or complicated setup procedures required.
 3. caching of recently accessed files (or better yet the most commonly used files)
 4. potential support for SSL
 5. potential support for HTTP/2.0
+6. use of QUIC transmision layer protocol
 
 ### Current ToDo
 - [ ] Create basic answer for tcp requests
@@ -23,3 +24,4 @@ No configuration files or complicated setup procedures required.
     - [ ] Add support for binary files like icons and images
     - [ ] Error messages, such as 404, etc.
 - [ ] Add basic configuration (port, 404 file, etc.)
+

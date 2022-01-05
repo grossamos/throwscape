@@ -1,7 +1,5 @@
 use std::{net::{TcpListener, SocketAddr}, process, env};
-use crate::configuration::Config;
-
-mod configuration;
+use ultrascape::configuration::Config;
 
 fn main() {
     // retrieve configuration
