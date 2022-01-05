@@ -16,7 +16,7 @@ fn main() {
     let addr = SocketAddr::from(([127, 0, 0, 1], config.port));
 
     if let Ok(listener) = TcpListener::bind(addr) {
-        ultrascape::run(listener);
+        ultrascape::run(config, listener);
     } else {
         eprintln!("Could not bind to port");
         process::exit(1);

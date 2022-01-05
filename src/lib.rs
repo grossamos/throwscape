@@ -1,18 +1,17 @@
 use std::{net::TcpListener, io::Write};
 
-use http::{HttpRequest, HttpMethod};
+use http::HttpRequest;
+use configuration::Config;
 
 pub mod http;
 pub mod configuration;
 
-pub fn run(listener: TcpListener) {
+pub fn run(config: Config, listener: TcpListener) {
     for stream in listener.incoming() {
         let mut stream = match stream {
-            Ok(str) => str,
-            Err(_) => {
-                eprintln!("fuck");
-                continue;
-            }
+            Ok(stream) => stream,
+            Err(_) => continue,
+           
         };
         
         let request = match HttpRequest::new(&mut stream) {
@@ -20,22 +19,12 @@ pub fn run(listener: TcpListener) {
             Err(_) => continue,
         };
 
-        let response;
+        println!("Method: {:?}, Path: {}", request.method, request.path);
 
-        if HttpMethod::GET == request.method && request.path == "/" {
-            let content = "<h1>Hello World!</h1>";
-            response = format!(
-                "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
-                content.len(),
-                content
-            );
-        } else {
-            response = String::from("HTTP/1.1 404 NOT FOUND\r\n\r\n\r\n");
-        }
-        stream.write(response.as_bytes()).unwrap();
+        let response = http::respond_to_request(request, &config);
+
+        stream.write(response.format().as_bytes()).unwrap();
         stream.flush().unwrap();
-
-        println!("Method: {:?}, Path: {}", request.method, request.path)
     }
 }
 

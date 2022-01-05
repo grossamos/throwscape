@@ -15,7 +15,7 @@ No configuration files or complicated setup procedures required.
 6. use of QUIC transmision layer protocol
 
 ### Current ToDo
-- [ ] Create basic answer for tcp requests
+- [x] Create basic answer for tcp requests
 - [x] Create Configuration framework (additional module)
 - [ ] Add concurrency model
 - [ ] Add basic HTTP/1.1 support:
