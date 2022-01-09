@@ -19,7 +19,7 @@ impl HttpResponse {
     }
 }
 
-pub fn respond_to_request(request: HttpRequest, config: &Config) -> HttpResponse {
+pub fn respond_to_request(request: &HttpRequest, config: &Config) -> HttpResponse {
     let mut file_path = config.serve_path.clone();
 
     if request.path == "/" {
