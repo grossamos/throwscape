@@ -1,4 +1,6 @@
-use std::{net::TcpStream, io::Read};
+use std::{net::TcpStream, io::{BufReader, BufRead}};
+
+use crate::configuration::Config;
 
 #[derive(Debug)]
 #[derive(PartialEq)]
@@ -13,34 +15,20 @@ pub struct HttpRequest {
 }
 
 impl HttpRequest {
-    pub fn new(stream: &mut TcpStream) -> Result<HttpRequest, String> {
-        const BUFFER_SIZE: usize = 1024;
-        let mut buffer = vec![0 as u8; BUFFER_SIZE];
-        let mut header_string = String::new();
+    pub fn new(stream: &mut TcpStream, config: &Config) -> Result<HttpRequest, String> {
+        stream.set_read_timeout(Some(config.timeout)).unwrap();
 
-        loop {
-            let bytes_read = match stream.read(&mut buffer) {
-                Ok(num) => num,
-                Err(_) => return Err(
-                    String::from("An error occured while reading the stream")
-                ),
-            };
+        let mut buffered_reader = BufReader::new(stream);
 
-            header_string.push_str(&String::from_utf8_lossy(&buffer));
+        // TODO check for security in regards to timeouts
+        let mut status_line_buffer = String::new();
 
-            if bytes_read < BUFFER_SIZE {
-                break;
-            }
+        match buffered_reader.read_line(&mut status_line_buffer) {
+            Err(_) | Ok(0) => return Err(String::from("Issue reading stream")),
+            _ => {},
         }
 
-        let mut header_lines = header_string.lines();
-        let status_line = match header_lines.next() {
-            Some(status_line) => status_line,
-            None => return Err(String::from("Invalid HttpRequest")),
-        };
-
-
-        let (method, path) = Self::parse_statusline(status_line)?;
+        let (method, path) = Self::parse_statusline(&status_line_buffer)?;
 
         Ok(HttpRequest {
             method,

@@ -36,11 +36,16 @@ Thus no further crates or dependencies outside of the OS exist.
 - [x] Create basic answer for tcp requests
 - [x] Create Configuration framework (additional module)
 - [x] Add concurrency model
-- [ ] Add basic HTTP/1.1 support:
-    - [ ] Parsing of request 
-    - [ ] Translate to sending up file
-    - [ ] Add support for binary files like icons and images
-    - [ ] Error messages, such as 404, etc.
+- [x] Add basic HTTP/1.1 support:
+    - [ ] Incrementally fetching status line
+    - [ ] Handling of invalid requests:
+        - [ ] 404 file 
+        - [ ] Invalid methods (post etc.)
+        - [ ] Non-spec compliant requests
+    - [ ] Timeouts in case of slow lorris attacks
+    - [ ] Propperly send up files (allow for binary, such as images)
+    - [ ] Possibly gzip support for files exceeding a certain size
 - [ ] Add basic configuration (port, 404 file, etc.)
 - [ ] Add a help page and potentially autocompletion for flags
+
 

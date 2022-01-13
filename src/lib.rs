@@ -19,14 +19,14 @@ pub fn run(config: Config, listener: TcpListener) {
             Err(_) => continue,
            
         };
-        
-        let request = match HttpRequest::new(&mut stream) {
-            Ok(request) => request,
-            Err(_) => continue,
-        };
 
         pool.handle_job(
             Box::new(move |thread_config: &Config| {
+                let request = match HttpRequest::new(&mut stream, &thread_config) {
+                    Ok(request) => request,
+                    Err(_) => return,
+                };
+
                 println!("Method: {:?}, Path: {}", request.method, request.path);
 
                 let response = http::respond_to_request(&request, &thread_config);
