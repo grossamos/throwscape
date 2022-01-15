@@ -22,10 +22,10 @@ impl HttpResponse {
 pub fn respond_to_request(request: &HttpRequest, config: &Config) -> HttpResponse {
     let mut file_path = config.serve_path.clone();
 
-    if request.path == "/" {
+    if request.request_target == "/" {
         file_path.push("index.html");
     } else {
-        file_path.push(&request.path[1..]);
+        file_path.push(&request.request_target[1..]);
     }
 
     let file_path = file_path.as_path();

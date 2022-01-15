@@ -27,7 +27,7 @@ pub fn run(config: Config, listener: TcpListener) {
                     Err(_) => return,
                 };
 
-                println!("Method: {:?}, Path: {}", request.method, request.path);
+                println!("Method: {:?}, Path: {}", request.method, request.request_target);
 
                 let response = http::respond_to_request(&request, &thread_config);
 

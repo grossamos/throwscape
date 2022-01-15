@@ -57,3 +57,29 @@ impl Config {
 
 }
 
+#[cfg(test)]
+mod tests {
+    use std::{time::Duration, path::PathBuf};
+
+    #[test]
+    fn correctly_parses_arguments() {
+        const PORT: u16 = 99;
+        const TIMEOUT: u64 = 2;
+        const SOURCE_FOLDER: &str = "./example-stuff";
+
+        println!("{}", PORT.to_string());
+
+        let args = [
+            String::from("ultrascape"),
+            String::from("--port"), PORT.to_string(),
+            String::from("--timeout"), TIMEOUT.to_string(),
+            String::from("--source"), SOURCE_FOLDER.to_string(),
+        ];
+        
+        let result = super::Config::new(&args).unwrap();
+
+        assert_eq!(result.port, PORT);
+        assert_eq!(result.timeout, Duration::from_secs(TIMEOUT));
+        assert_eq!(result.serve_path, PathBuf::from(SOURCE_FOLDER));
+    }
+}
