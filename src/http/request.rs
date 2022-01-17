@@ -53,6 +53,12 @@ pub enum HttpRequestTarget {
 
 #[derive(Debug)]
 #[derive(PartialEq)]
+pub struct HttpConnectionMetaData {
+    pub http_version: HttpVersion,
+}
+
+#[derive(Debug)]
+#[derive(PartialEq)]
 pub enum HttpScheme {
     Http,
     Https,
@@ -61,14 +67,14 @@ pub enum HttpScheme {
 #[derive(Debug)]
 #[derive(PartialEq)]
 pub struct HttpVersion {
-    major: u8,
-    minor: u8,
+    pub major: u8,
+    pub minor: u8,
 }
 
 pub struct HttpRequest {
     pub method: HttpMethod,
     pub request_target: HttpRequestTarget,
-    pub http_version: HttpVersion,
+    pub meta_data: HttpConnectionMetaData,
     _content: Option<String>,
 }
 
@@ -79,7 +85,6 @@ impl HttpRequest {
 
         let mut buffered_reader = BufReader::new(stream);
 
-        // TODO check for security in regards to timeouts
         let mut request_line_buffer = String::new();
 
         match buffered_reader.read_line(&mut request_line_buffer) {
@@ -92,7 +97,9 @@ impl HttpRequest {
         Ok(HttpRequest {
             method,
             request_target,
-            http_version,
+            meta_data: HttpConnectionMetaData {
+                http_version,
+            },
             _content: None,
         })
         

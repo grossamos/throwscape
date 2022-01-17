@@ -48,8 +48,10 @@ Thus no further crates or dependencies outside of the OS exist.
     - [x] Timeouts in case of slow lorris attacks
     - [ ] Propperly send up files (allow for binary, such as images)
     - [ ] Fix authority form for authorities starting with `h`
+    - [ ] Catch `..` in request paths somehow
 - [ ] Add basic configuration (port, 404 file, etc.)
     - [ ] Change copies of config (threadConfig) to smart pointer (Box)
+    - [ ] Add configuration option for index file
 - [ ] Add a help page and potentially autocompletion for flags
 - [ ] Catch responses to server with `unknown` response (see RFC7230, 3.1)
 

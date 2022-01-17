@@ -22,16 +22,16 @@ pub fn run(config: Config, listener: TcpListener) {
 
         pool.handle_job(
             Box::new(move |thread_config: &Config| {
-                let request = match HttpRequest::new(&mut stream, &thread_config) {
+                let _request = match HttpRequest::new(&mut stream, &thread_config) {
                     Ok(request) => request,
                     Err(_) => return,
                 };
 
-                println!("Method: {:?}, Path: {}", request.method, request.request_target);
+                //println!("Method: {:?}, Path: {}", request.method, request.request_target);
 
-                let response = http::respond_to_request(&request, &thread_config);
+                //let response = http::respond_to_request(&request, &thread_config);
 
-                stream.write(response.format().as_bytes()).unwrap();
+                //stream.write(response.format().as_bytes()).unwrap();
                 stream.flush().unwrap();
             }
         ));

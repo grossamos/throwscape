@@ -6,7 +6,8 @@ use super::util;
 pub struct Config {
     pub port: u16,
     pub serve_path: PathBuf,
-    pub timeout: Duration
+    pub timeout: Duration,
+    pub index_file_name: String,
 }
 
 impl Config {
@@ -15,6 +16,7 @@ impl Config {
         let mut port = 8080;
         let mut serve_path = PathBuf::from("./");
         let mut timeout = Duration::from_secs(30);
+        let index_file_name = String::from("index.html");
 
         while index < args.len() {
             match args[index].as_str() {
@@ -33,6 +35,7 @@ impl Config {
                     }
 
                     serve_path = PathBuf::from(&args[index + 1]);
+
                     index += 1;
                 },
                 "--timeout" => {
@@ -47,11 +50,17 @@ impl Config {
             }
             index += 1;
         }
+
+        let serve_path = match serve_path.canonicalize() {
+            Ok(serve_path) => serve_path,
+            Err(_) => return Err(String::from("Failed to read directory")),
+        };
         
         Ok(Config { 
             port,
             serve_path,
             timeout,
+            index_file_name,
         })
     }
 
@@ -65,9 +74,7 @@ mod tests {
     fn correctly_parses_arguments() {
         const PORT: u16 = 99;
         const TIMEOUT: u64 = 2;
-        const SOURCE_FOLDER: &str = "./example-stuff";
-
-        println!("{}", PORT.to_string());
+        const SOURCE_FOLDER: &str = "./example";
 
         let args = [
             String::from("ultrascape"),
@@ -80,6 +87,6 @@ mod tests {
 
         assert_eq!(result.port, PORT);
         assert_eq!(result.timeout, Duration::from_secs(TIMEOUT));
-        assert_eq!(result.serve_path, PathBuf::from(SOURCE_FOLDER));
+        assert_eq!(result.serve_path, PathBuf::from(SOURCE_FOLDER).canonicalize().unwrap());
     }
 }
