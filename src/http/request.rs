@@ -71,6 +71,25 @@ pub struct HttpVersion {
     pub minor: u8,
 }
 
+impl ToString for HttpVersion {
+    fn to_string(&self) -> String {
+        format!("HTTP/{}.{}", self.major, self.minor)
+    }
+}
+
+#[derive(Debug)]
+#[derive(PartialEq)]
+pub struct HttpHeader {
+    pub field_name: String,
+    pub field_value: String,
+}
+
+impl ToString for HttpHeader {
+    fn to_string(&self) -> String {
+        format!("{}: {}", self.field_name, self.field_value)
+    }
+}
+
 pub struct HttpRequest {
     pub method: HttpMethod,
     pub request_target: HttpRequestTarget,
