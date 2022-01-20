@@ -34,24 +34,13 @@ Thus no further crates or dependencies outside of the OS exist.
 6. use of QUIC transmision layer protocol
 
 ### Current ToDo
-- [x] Create basic answer for tcp requests
-- [x] Create Configuration framework (additional module)
-- [x] Add concurrency model
-- [x] Add basic HTTP/1.1 support:
-    - [ ] Incrementally fetching header
-    - [ ] Handling of invalid requests:
-        - [ ] 404 file 
-        - [ ] Have to handle `GET` and `HEAD`, for all others respond with 405 (except when
-          unknown, then return 501)
-        - [ ] Invalid methods (post etc.)
-        - [ ] Non-spec compliant requests
-    - [x] Timeouts in case of slow lorris attacks
-    - [ ] Propperly send up files (allow for binary, such as images)
-    - [ ] Fix authority form for authorities starting with `h`
-    - [ ] Catch `..` in request paths somehow
-- [ ] Add basic configuration (port, 404 file, etc.)
-    - [ ] Change copies of config (threadConfig) to smart pointer (Box)
-    - [ ] Add configuration option for index file
-- [ ] Add a help page and potentially autocompletion for flags
+- [ ] Create 404 file
+- [ ] Fix authority form starting with `h`
+- [ ] Move ThreadConfig to Box or Rc
+- [ ] Add config for index file name
 - [ ] Catch responses to server with `unknown` response (see RFC7230, 3.1)
+- [ ] Add propper semantic handling of headers
+- [ ] add a help page!
+- [ ] add autocompletion
+- [ ] Incrementally fetch header
 
