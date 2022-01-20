@@ -17,12 +17,16 @@ pub enum HttpMethod {
     CONNECT,
     OPTIONS,
     TRACE,
+    UnknownMethod,
 }
 
 #[derive(Debug)]
 #[derive(PartialEq)]
 pub enum HttpParsingError {
     InvalidSyntax,
+    InvalidMethodFormat,
+    InvalidTargetFormat,
+    InvalidVersionFormat,
     TcpIssue(),
     UnknownMethod,
     UnknownScheme,
@@ -128,39 +132,39 @@ impl HttpRequest {
         let mut lines = request_line.split(" ");
 
         let method = match lines.next() {
-            Some(method_string) => Self::parse_method(method_string)?,
-            None => return Err(HttpParsingError::InvalidSyntax),
+            Some(method_string) => Self::parse_method(method_string),
+            None => return Err(HttpParsingError::InvalidMethodFormat),
         };
         let target = match lines.next() {
             Some(target_path_string) => Self::parse_target_path(target_path_string)?,
-            None => return Err(HttpParsingError::InvalidSyntax),
+            None => return Err(HttpParsingError::InvalidTargetFormat),
         };
         let version = match lines.next() {
             Some(version_string) => Self::parse_http_version(version_string.trim_end())?,
-            None => return Err(HttpParsingError::InvalidSyntax),
+            None => return Err(HttpParsingError::InvalidVersionFormat),
         };
 
         Ok((method, target, version))
     }
 
-    fn parse_method(method: &str) -> Result<HttpMethod, HttpParsingError> {
+    fn parse_method(method: &str) -> HttpMethod {
         match method {
-            "GET" => Ok(HttpMethod::GET),
-            "HEAD" => Ok(HttpMethod::HEAD),
-            "POST" => Ok(HttpMethod::POST),
-            "PUT" => Ok(HttpMethod::PUT),
-            "DELETE" => Ok(HttpMethod::DELETE),
-            "CONNECT" => Ok(HttpMethod::CONNECT),
-            "OPTIONS" => Ok(HttpMethod::OPTIONS),
-            "TRACE" => Ok(HttpMethod::TRACE),
-            _ => Err(HttpParsingError::UnknownMethod),
+            "GET" => HttpMethod::GET,
+            "HEAD" => HttpMethod::HEAD,
+            "POST" => HttpMethod::POST,
+            "PUT" => HttpMethod::PUT,
+            "DELETE" => HttpMethod::DELETE,
+            "CONNECT" => HttpMethod::CONNECT,
+            "OPTIONS" => HttpMethod::OPTIONS,
+            "TRACE" => HttpMethod::TRACE,
+            _ => HttpMethod::UnknownMethod,
         }
 
     }
 
     fn parse_target_path(target_path: &str) -> Result<HttpRequestTarget, HttpParsingError> {
         lazy_static! {
-            static ref ORIGIN_FORM_REGEX: Regex = Regex::new(r"^((?:/|\w)*)(?:\?([^#]*))?$").unwrap();
+            static ref ORIGIN_FORM_REGEX: Regex = Regex::new(r"^([^?[:space:]]*)(?:\?([^#]*))?$").unwrap();
             static ref ABSOLTE_FORM_REGEX: Regex = Regex::new(r"^(http|https)://((?:\w|\.)+(?::\d+)?)((?:/|\w)*)?(?:\?([^#]*))?$").unwrap();
             static ref AUTHORITY_FORM_REGEX: Regex = Regex::new(r"^((?:\w|\.)+(?::\d+)?)$").unwrap();
         }
@@ -168,7 +172,7 @@ impl HttpRequest {
             '/' => {
                 let captures = match ORIGIN_FORM_REGEX.captures(target_path) {
                     Some(captures) => captures,
-                    None => return Err(HttpParsingError::InvalidSyntax),
+                    None => return Err(HttpParsingError::InvalidTargetFormat),
                 };
 
                 let path = String::from(&captures[1]);
@@ -185,7 +189,7 @@ impl HttpRequest {
             'h' => {
                 let captures = match ABSOLTE_FORM_REGEX.captures(target_path) {
                     Some(captures) => captures,
-                    None => return Err(HttpParsingError::InvalidSyntax),
+                    None => return Err(HttpParsingError::InvalidTargetFormat),
                 };
                 let scheme = match &captures[1] {
                     "http" => HttpScheme::Http,
@@ -205,7 +209,7 @@ impl HttpRequest {
             },
             '*' => {
                 if target_path != "*" {
-                    Err(HttpParsingError::InvalidSyntax)
+                    Err(HttpParsingError::InvalidTargetFormat)
                 } else {
                     Ok(HttpRequestTarget::AsteriskForm)
                 }
@@ -213,7 +217,7 @@ impl HttpRequest {
             _ => {
                 let captures = match AUTHORITY_FORM_REGEX.captures(target_path) {
                     Some(captures) => captures,
-                    None => return Err(HttpParsingError::InvalidSyntax),
+                    None => return Err(HttpParsingError::InvalidTargetFormat),
                 };
 
                 let authority = String::from(&captures[1]);
@@ -264,10 +268,10 @@ mod tests {
     }
 
     #[test]
-    fn gives_error_when_providing_invalid_method() {
+    fn gives_unknown_method_when_providing_invalid_method() {
         let request_line = "GLOOP * HTTP/1.1";
         let result = HttpRequest::parse_request_line(request_line);
-        let expected = Err(HttpParsingError::UnknownMethod);
+        let expected = Ok((HttpMethod::UnknownMethod, HttpRequestTarget::AsteriskForm, HttpVersion{major: 1, minor: 1}));
         assert_eq!(result, expected);
     }
 
@@ -302,6 +306,17 @@ mod tests {
     }
 
     #[test]
+    fn parses_png_file_propperly() {
+        let valid_target_path = "/hello/world.png";
+        let result = HttpRequest::parse_target_path(valid_target_path);
+        let expected = Ok(HttpRequestTarget::OriginForm{
+            path: String::from("/hello/world.png"),
+            query: None,
+        });
+        assert_eq!(result, expected);
+    }
+
+    #[test]
     fn parses_absolute_path_with_parameters_correctly() {
         let valid_target_path = "http://example.com:8080/hello/world?wuauaua/sj?s._-";
         let result = HttpRequest::parse_target_path(valid_target_path);
@@ -326,7 +341,7 @@ mod tests {
     fn gives_error_for_invalid_asterisk_path() {
         let valid_asterisk_path = "*bluib";
         let result = HttpRequest::parse_target_path(valid_asterisk_path);
-        let expected = Err(HttpParsingError::InvalidSyntax);
+        let expected = Err(HttpParsingError::InvalidTargetFormat);
         assert_eq!(result, expected);
     }
 
@@ -334,7 +349,7 @@ mod tests {
     fn gives_error_for_invalid_path() {
         let invalid_path = "bluib.99:88.ss";
         let result = HttpRequest::parse_target_path(invalid_path);
-        let expected = Err(HttpParsingError::InvalidSyntax);
+        let expected = Err(HttpParsingError::InvalidTargetFormat);
         assert_eq!(result, expected);
     }
 

@@ -25,7 +25,7 @@ pub enum HttpStatus {
     MethodNotAllowed,
     FileNotFound,
     InternalServerError,
-    //NotImplemented,
+    NotImplemented,
 }
 
 impl HttpStatus {
@@ -36,7 +36,7 @@ impl HttpStatus {
             HttpStatus::MethodNotAllowed => 405,
             HttpStatus::FileNotFound => 404,
             HttpStatus::InternalServerError => 500,
-            //HttpStatus::NotImplemented => 501,
+            HttpStatus::NotImplemented => 501,
         }
     }
     pub fn as_reason_statement(&self) -> &str {
@@ -45,7 +45,7 @@ impl HttpStatus {
             HttpStatus::BadRequest => "Bad Request",
             HttpStatus::MethodNotAllowed => "Method Not Allowed",
             HttpStatus::FileNotFound => "File Not Found",
-            //HttpStatus::NotImplemented => "Not Implemented",
+            HttpStatus::NotImplemented => "Not Implemented",
             HttpStatus::InternalServerError => "Internal Server Error",
         }
     }
@@ -78,6 +78,8 @@ impl HttpResponse {
             }
         } else if request.method == HttpMethod::HEAD {
             (HttpMessageContent::Empty, 0)
+        } else if request.method == HttpMethod::UnknownMethod {
+            return Self::generate_error_response(HttpStatus::NotImplemented, request.meta_data);
         } else {
             return Self::generate_error_response(HttpStatus::MethodNotAllowed, request.meta_data);
         };
