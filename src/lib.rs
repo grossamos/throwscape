@@ -1,7 +1,6 @@
 use std::net::TcpListener;
-use std::io::Write;
 
-use http::HttpRequest;
+use http::{HttpRequest, HttpResponse};
 use configuration::Config;
 
 use crate::scheduler::ThreadPool;
@@ -22,17 +21,20 @@ pub fn run(config: Config, listener: TcpListener) {
 
         pool.handle_job(
             Box::new(move |thread_config: &Config| {
-                let _request = match HttpRequest::new(&mut stream, &thread_config) {
+                let request = match HttpRequest::new(&mut stream, &thread_config) {
                     Ok(request) => request,
-                    Err(_) => return,
+                    Err(err) => {
+                        eprintln!("ERROR: {:?}", err);
+                        return;
+                    },
                 };
 
-                //println!("Method: {:?}, Path: {}", request.method, request.request_target);
+                let response = HttpResponse::new(request, &thread_config);
+                match response.send(&mut stream) {
+                    Ok(_) => {},
+                    Err(err) => eprintln!("ERROR: {}", err),
+                }
 
-                //let response = http::respond_to_request(&request, &thread_config);
-
-                //stream.write(response.format().as_bytes()).unwrap();
-                stream.flush().unwrap();
             }
         ));
 

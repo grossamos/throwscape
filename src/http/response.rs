@@ -1,9 +1,11 @@
+use std::fs::File;
+use std::io::{Write, Error, BufReader, self};
 use std::path::{Path, PathBuf};
 use std::net::TcpStream;
 
 use crate::configuration::Config;
 
-use super::request::{HttpRequestTarget, HttpConnectionMetaData, HttpHeader, HttpVersion};
+use super::request::{HttpRequestTarget, HttpConnectionMetaData, HttpHeader};
 use super::{HttpRequest, HttpMethod};
 
 #[derive(Debug)]
@@ -22,6 +24,7 @@ pub enum HttpStatus {
     BadRequest,
     MethodNotAllowed,
     FileNotFound,
+    InternalServerError,
     //NotImplemented,
 }
 
@@ -32,6 +35,7 @@ impl HttpStatus {
             HttpStatus::BadRequest => 400,
             HttpStatus::MethodNotAllowed => 405,
             HttpStatus::FileNotFound => 404,
+            HttpStatus::InternalServerError => 500,
             //HttpStatus::NotImplemented => 501,
         }
     }
@@ -42,7 +46,11 @@ impl HttpStatus {
             HttpStatus::MethodNotAllowed => "Method Not Allowed",
             HttpStatus::FileNotFound => "File Not Found",
             //HttpStatus::NotImplemented => "Not Implemented",
+            HttpStatus::InternalServerError => "Internal Server Error",
         }
+    }
+    pub fn get_reason_statement_len(&self) -> u64 {
+        self.as_reason_statement().len() as u64
     }
 }
 
@@ -63,19 +71,18 @@ impl HttpResponse {
             _ => return Self::generate_error_response(HttpStatus::BadRequest, request.meta_data),
         };
 
-        let content = if request.method == HttpMethod::GET {
+        let (content, len) = if request.method == HttpMethod::GET {
             match Self::pre_generate_message_content(path, &config.serve_path, &config.index_file_name) {
                 Err(status) => return Self::generate_error_response(status, request.meta_data),
                 Ok(message) => message,
             }
         } else if request.method == HttpMethod::HEAD {
-            HttpMessageContent::Empty
+            (HttpMessageContent::Empty, 0)
         } else {
             return Self::generate_error_response(HttpStatus::MethodNotAllowed, request.meta_data);
         };
 
-        // TODO imlement propper length fetching
-        let headers = Self::generate_response_headers(123);
+        let headers = Self::generate_response_headers(len);
 
         HttpResponse { 
             status: HttpStatus::Okay,
@@ -85,17 +92,34 @@ impl HttpResponse {
         }
     }
 
-    pub fn send(&self, stream: &mut TcpStream) {
-        // TODO actually implement send
+    pub fn send(&self, stream: &mut TcpStream) -> Result<(), Error> {
+        stream.write(self.generate_status_line().as_bytes())?;
+        for header in self.headers.iter() {
+            stream.write(header.to_string().as_bytes())?;
+        }
+        stream.write("\r\n".as_bytes())?;
+        match &self.content {
+            HttpMessageContent::Empty => {},
+            HttpMessageContent::ErrorResponse => {
+                // TODO add special handling for 404 case
+                stream.write(self.status.as_reason_statement().as_bytes())?;
+            }
+            HttpMessageContent::FileContent(path) => {
+                let mut reader = BufReader::new(File::open(path)?);
+                io::copy(&mut reader, stream)?;
+            },
+        }
+        stream.flush()?;
+        Ok(())
 
     }
 
     fn generate_error_response(status: HttpStatus, meta_data: HttpConnectionMetaData) -> HttpResponse {
-        let headers = Self::generate_response_headers(123);
+        let headers = Self::generate_response_headers(status.get_reason_statement_len());
         HttpResponse { status, meta_data, headers, content: HttpMessageContent::ErrorResponse }
     }
 
-    fn pre_generate_message_content(path: &str, serve_path: &PathBuf, index_file_name: &str) -> Result<HttpMessageContent, HttpStatus> {
+    fn pre_generate_message_content(path: &str, serve_path: &PathBuf, index_file_name: &str) -> Result<(HttpMessageContent, u64), HttpStatus> {
         let mut file_path = serve_path.clone();
 
         let path = if path.starts_with("/") {
@@ -106,7 +130,7 @@ impl HttpResponse {
 
         file_path.push(path);
 
-        if path.ends_with("/") {
+        if file_path.is_dir() {
             file_path.push(index_file_name);
         }
 
@@ -119,19 +143,23 @@ impl HttpResponse {
         if !file_path.starts_with(serve_path) {
             return Err(HttpStatus::FileNotFound)
         }
-        Ok(HttpMessageContent::FileContent(Box::from(file_path.as_path())))
+        let len = match file_path.metadata() {
+            Ok(meta_data) => meta_data.len(),
+            Err(_) => return Err(HttpStatus::InternalServerError),
+        };
+        Ok((HttpMessageContent::FileContent(Box::from(file_path.as_path())), len))
     }
 
-    fn generate_status_line(version: HttpVersion, status_code: HttpStatus) -> String {
+    fn generate_status_line(&self) -> String {
         format!(
             "{} {} {}\r\n",
-            version.to_string(),
-            status_code.as_code(),
-            status_code.as_reason_statement(),
+            self.meta_data.http_version.to_string(),
+            self.status.as_code(),
+            self.status.as_reason_statement(),
         )
     }
 
-    fn generate_response_headers(content_length: u32) -> Vec<HttpHeader> {
+    fn generate_response_headers(content_length: u64) -> Vec<HttpHeader> {
         let mut headers = vec![];
         headers.push(HttpHeader{field_name: String::from("Content-Length"), field_value: content_length.to_string()});
         headers
@@ -144,7 +172,7 @@ mod tests {
     use std::env;
 
     use crate::http::HttpResponse;
-    use crate::http::request::{HttpVersion, HttpHeader};
+    use crate::http::request::{HttpVersion, HttpHeader, HttpConnectionMetaData};
     use crate::http::response::{HttpStatus, HttpMessageContent};
 
     #[test]
@@ -159,7 +187,7 @@ mod tests {
 
         let expected = HttpMessageContent::FileContent(Box::from(expected.as_path()));
 
-        let result = HttpResponse::pre_generate_message_content(html_path, &serve_path, index_file_name).unwrap();
+        let result = HttpResponse::pre_generate_message_content(html_path, &serve_path, index_file_name).unwrap().0;
         assert_eq!(result, expected);
     }
 
@@ -191,9 +219,11 @@ mod tests {
     fn generates_valid_status_line() {
         let version = HttpVersion{major: 1, minor: 1};
         let status_code = HttpStatus::Okay;
+
+        let http_response = HttpResponse{ status: status_code, meta_data: HttpConnectionMetaData{ http_version: version }, headers: vec![], content: HttpMessageContent::Empty };
         
         let expected = String::from("HTTP/1.1 200 OK\r\n");
-        let result = HttpResponse::generate_status_line(version, status_code);
+        let result = http_response.generate_status_line();
         
         assert_eq!(expected, result);
     }

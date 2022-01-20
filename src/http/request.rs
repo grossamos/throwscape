@@ -86,7 +86,7 @@ pub struct HttpHeader {
 
 impl ToString for HttpHeader {
     fn to_string(&self) -> String {
-        format!("{}: {}", self.field_name, self.field_value)
+        format!("{}: {}\r\n", self.field_name, self.field_value)
     }
 }
 
@@ -136,7 +136,7 @@ impl HttpRequest {
             None => return Err(HttpParsingError::InvalidSyntax),
         };
         let version = match lines.next() {
-            Some(version_string) => Self::parse_http_version(version_string)?,
+            Some(version_string) => Self::parse_http_version(version_string.trim_end())?,
             None => return Err(HttpParsingError::InvalidSyntax),
         };
 
@@ -240,6 +240,12 @@ impl HttpRequest {
         Ok(HttpVersion {major, minor})
     }
 
+}
+
+impl ToString for HttpRequest {
+    fn to_string(&self) -> String {
+        format!("{:?}, {:?}", self.method, self.request_target)
+    }
 }
 
 
