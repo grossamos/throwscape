@@ -17,12 +17,6 @@ cd ./ultrascape
 cargo run -- --source ./example
 ```
 
-### Dependencies
-As of right now, the entire webserver is written in pure (as close to the metal) rust.
-Thus no further crates or dependencies outside of the OS exist.
-
-
-
 ## Roadmap
 ### Planned features
 1. serving of static webpages based on local files (ex. html, css, etc.) with HTTP/1.1
@@ -44,3 +38,5 @@ Thus no further crates or dependencies outside of the OS exist.
 - [ ] add autocompletion
 - [ ] Incrementally fetch header
 
+### Current Defects
+- [ ] request with invalid method and path returns 404, should probably return 405 or 501 first

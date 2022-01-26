@@ -13,7 +13,7 @@ fn main() {
     }; 
 
     // open tcp port
-    let addr = SocketAddr::from(([127, 0, 0, 1], config.port));
+    let addr = SocketAddr::from(([0, 0, 0, 0], config.port));
 
     if let Ok(listener) = TcpListener::bind(addr) {
         ultrascape::run(config, listener);

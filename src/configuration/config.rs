@@ -1,4 +1,4 @@
-use std::{path::PathBuf, time::Duration};
+use std::{path::{PathBuf, Path}, time::Duration};
 
 use super::util;
 
@@ -8,6 +8,8 @@ pub struct Config {
     pub serve_path: PathBuf,
     pub timeout: Duration,
     pub index_file_name: String,
+    pub file_not_found_path: Box<Path>,
+    pub is_in_debug_mode: bool,
 }
 
 impl Config {
@@ -16,7 +18,10 @@ impl Config {
         let mut port = 8080;
         let mut serve_path = PathBuf::from("./");
         let mut timeout = Duration::from_secs(30);
-        let index_file_name = String::from("index.html");
+        let mut index_file_name = String::from("index.html");
+        let mut file_not_found_path = serve_path.clone();
+        file_not_found_path.push("404.html");
+        let mut is_in_debug_mode = false;
 
         while index < args.len() {
             match args[index].as_str() {
@@ -35,7 +40,6 @@ impl Config {
                     }
 
                     serve_path = PathBuf::from(&args[index + 1]);
-
                     index += 1;
                 },
                 "--timeout" => {
@@ -46,6 +50,25 @@ impl Config {
                     timeout = Duration::from_secs(util::parse_next_arg(args, index)?);
                     index += 1;
                 },
+                "--index-file-name" => {
+                    if util::check_for_missing_next_value(args, index) {
+                        return Err(String::from("Missing index file name"));
+                    }
+
+                    index_file_name = args[index + 1].to_string();
+                    index += 1;
+                },
+                "--404-file" => {
+                    if util::check_for_missing_next_value(args, index) {
+                        return Err(String::from("Missing 404 file path"));
+                    }
+
+                    file_not_found_path = PathBuf::from(&args[index + 1]);
+                    index += 1;
+                },
+                "--debug" => {
+                    is_in_debug_mode = true;
+                }
                 _ => return Err(format!("Invalid parameter: \"{}\"", args[index])),
             }
             index += 1;
@@ -61,6 +84,8 @@ impl Config {
             serve_path,
             timeout,
             index_file_name,
+            file_not_found_path: Box::from(file_not_found_path),
+            is_in_debug_mode,
         })
     }
 
