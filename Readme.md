@@ -14,7 +14,7 @@ git clone https://github.com/grossamos/ultrascape.git
 
 cd ./ultrascape
 
-cargo run -- --source ./example
+cargo run -- --source ./example --debug
 ```
 
 ## Roadmap
@@ -28,7 +28,7 @@ cargo run -- --source ./example
 6. use of QUIC transmision layer protocol
 
 ### Current ToDo
-- [ ] Create 404 file
+- [x] Create 404 file
 - [ ] Fix authority form starting with `h`
 - [ ] Move ThreadConfig to Box or Rc
 - [ ] Add config for index file name
