@@ -1,7 +1,5 @@
 use std::{sync::mpsc::{Receiver, Sender, self}, thread};
 
-use crate::configuration::Config;
-
 pub struct Scheduler {
     job_assignment_sender: Sender<Job>,
 }
@@ -32,5 +30,5 @@ impl Scheduler {
     }
 }
 
-pub type Job = Box<dyn FnMut(&Config) + Send>;
+pub type Job = Box<dyn FnMut() + Send>;
 

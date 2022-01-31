@@ -1,6 +1,5 @@
-use std::{sync::mpsc, thread};
-
-use crate::configuration::Config;
+use std::thread;
+use std::sync::mpsc;
 
 use super::scheduler::{Job, Scheduler};
 
@@ -14,7 +13,7 @@ struct Worker {
 }
 
 impl ThreadPool {
-    pub fn new(threads: u32, config: Config) -> ThreadPool {
+    pub fn new(threads: u32) -> ThreadPool {
         if threads == 0 {
             panic!("Invalid thread count provided");
         }
@@ -33,15 +32,13 @@ impl ThreadPool {
                 _id: id,
             };
 
-            let threads_config_copy = config.clone();
-
             thread::spawn(move || {
                 loop {
                     current_waiting_sender.send(id).unwrap();
 
                     let mut job = current_job_rx.recv().unwrap();
 
-                    job(&threads_config_copy);
+                    job();
                 }
             });
 

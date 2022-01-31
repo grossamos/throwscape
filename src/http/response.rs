@@ -48,7 +48,7 @@ impl HttpStatus {
         }
     }
     pub fn is_error(&self) -> bool {
-        self.as_code() > 400
+        self.as_code() >= 400
     }
     pub fn get_reason_statement_len(&self) -> u64 {
         self.as_reason_statement().len() as u64
@@ -136,7 +136,6 @@ impl HttpResponse {
             let file = File::open(content_path)?;
             copy(&mut BufReader::new(file), stream)?;
         }
-        println!("{} {}", content_missing, self.status.is_error());
         if self.status.is_error() && content_missing {
             stream.write(self.status.as_reason_statement().as_bytes())?;
         }

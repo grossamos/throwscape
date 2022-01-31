@@ -29,14 +29,14 @@ cargo run -- --source ./example --debug
 
 ### Current ToDo
 - [x] Create 404 file
+- [x] Add config for index file name
+- [x] Move ThreadConfig to Box or Rc
 - [ ] Fix authority form starting with `h`
-- [ ] Move ThreadConfig to Box or Rc
-- [ ] Add config for index file name
 - [ ] Catch responses to server with `unknown` response (see RFC7230, 3.1)
+- [ ] Incrementally fetch header (header is not just ignored at this point)
 - [ ] Add propper semantic handling of headers
-- [ ] add a help page!
 - [ ] add autocompletion
-- [ ] Incrementally fetch header
+- [ ] add a help page!
 
 ### Current Defects
 - [ ] request with invalid method and path returns 404, should probably return 405 or 501 first
