@@ -31,8 +31,8 @@ cargo run -- --source ./example --debug
 - [x] Create 404 file
 - [x] Add config for index file name
 - [x] Move ThreadConfig to Box or Rc
-- [ ] Fix authority form starting with `h`
-- [ ] Catch responses to server with `unknown` response (see RFC7230, 3.1)
+- [x] Fix authority form starting with `h`
+- [x] Catch responses to server with `unknown` response (see RFC7230, 3.1)
 - [ ] Incrementally fetch header (header is not just ignored at this point)
 - [ ] Add propper semantic handling of headers
 - [ ] add autocompletion

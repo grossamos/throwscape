@@ -163,68 +163,91 @@ impl HttpRequest {
     }
 
     fn parse_target_path(target_path: &str) -> Result<HttpRequestTarget, HttpParsingError> {
-        lazy_static! {
-            static ref ORIGIN_FORM_REGEX: Regex = Regex::new(r"^([^?[:space:]]*)(?:\?([^#]*))?$").unwrap();
-            static ref ABSOLTE_FORM_REGEX: Regex = Regex::new(r"^(http|https)://((?:\w|\.)+(?::\d+)?)((?:/|\w)*)?(?:\?([^#]*))?$").unwrap();
-            static ref AUTHORITY_FORM_REGEX: Regex = Regex::new(r"^((?:\w|\.)+(?::\d+)?)$").unwrap();
-        }
         match target_path.chars().next().unwrap() {
             '/' => {
-                let captures = match ORIGIN_FORM_REGEX.captures(target_path) {
-                    Some(captures) => captures,
-                    None => return Err(HttpParsingError::InvalidTargetFormat),
-                };
-
-                let path = String::from(&captures[1]);
-                let query = match captures.get(2) {
-                    Some(rx_match) => Some(String::from(rx_match.as_str())),
-                    None => None
-                };
-
-                Ok(HttpRequestTarget::OriginForm{
-                    path, 
-                    query,
-                })
+                Self::parse_origin_form(target_path)
             },
             'h' => {
-                let captures = match ABSOLTE_FORM_REGEX.captures(target_path) {
-                    Some(captures) => captures,
-                    None => return Err(HttpParsingError::InvalidTargetFormat),
-                };
-                let scheme = match &captures[1] {
-                    "http" => HttpScheme::Http,
-                    "https" => HttpScheme::Https,
-                    _ => return Err(HttpParsingError::UnknownScheme),
-                };
-                let authority = String::from(&captures[2]);
-                let path = match captures.get(3) {
-                    Some(rx_match) => Some(String::from(rx_match.as_str())),
-                    None => None
-                };
-                let query = match captures.get(4) {
-                    Some(rx_match) => Some(String::from(rx_match.as_str())),
-                    None => None
-                };
-                Ok(HttpRequestTarget::AbsoluteForm{scheme, path, authority, query})
-            },
-            '*' => {
-                if target_path != "*" {
-                    Err(HttpParsingError::InvalidTargetFormat)
-                } else {
-                    Ok(HttpRequestTarget::AsteriskForm)
+                match Self::parse_absolute_form(target_path) {
+                    Ok(request_target) => Ok(request_target),
+                    Err(_) => Self::parse_authority_form(target_path),
                 }
             },
+            '*' => {
+                Self::parse_asterisk_form(target_path)
+            },
             _ => {
-                let captures = match AUTHORITY_FORM_REGEX.captures(target_path) {
-                    Some(captures) => captures,
-                    None => return Err(HttpParsingError::InvalidTargetFormat),
-                };
-
-                let authority = String::from(&captures[1]);
-
-                Ok(HttpRequestTarget::AuthorityForm{authority})
+                Self::parse_authority_form(target_path)
             },
         }
+    }
+
+    fn parse_origin_form(target_path: &str) -> Result<HttpRequestTarget, HttpParsingError> {
+        lazy_static! {
+            static ref ORIGIN_FORM_REGEX: Regex = Regex::new(r"^([^?[:space:]]*)(?:\?([^#]*))?$").unwrap();
+        }
+        let captures = match ORIGIN_FORM_REGEX.captures(target_path) {
+            Some(captures) => captures,
+            None => return Err(HttpParsingError::InvalidTargetFormat),
+        };
+
+        let path = String::from(&captures[1]);
+        let query = match captures.get(2) {
+            Some(rx_match) => Some(String::from(rx_match.as_str())),
+            None => None
+        };
+
+        Ok(HttpRequestTarget::OriginForm{
+            path, 
+            query,
+        })
+    }
+    
+    fn parse_absolute_form(target_path: &str) -> Result<HttpRequestTarget, HttpParsingError> {
+        lazy_static! {
+            static ref ABSOLTE_FORM_REGEX: Regex = Regex::new(r"^(http|https)://((?:\w|\.)+(?::\d+)?)((?:/|\w)*)?(?:\?([^#]*))?$").unwrap();
+        }
+        let captures = match ABSOLTE_FORM_REGEX.captures(target_path) {
+            Some(captures) => captures,
+            None => return Err(HttpParsingError::InvalidTargetFormat),
+        };
+        let scheme = match &captures[1] {
+            "http" => HttpScheme::Http,
+            "https" => HttpScheme::Https,
+            _ => return Err(HttpParsingError::UnknownScheme),
+        };
+        let authority = String::from(&captures[2]);
+        let path = match captures.get(3) {
+            Some(rx_match) => Some(String::from(rx_match.as_str())),
+            None => None
+        };
+        let query = match captures.get(4) {
+            Some(rx_match) => Some(String::from(rx_match.as_str())),
+            None => None
+        };
+        Ok(HttpRequestTarget::AbsoluteForm{scheme, path, authority, query})
+    }
+
+    fn parse_asterisk_form(target_path: &str) -> Result<HttpRequestTarget, HttpParsingError> {
+        if target_path != "*" {
+            Err(HttpParsingError::InvalidTargetFormat)
+        } else {
+            Ok(HttpRequestTarget::AsteriskForm)
+        }
+    }
+
+    fn parse_authority_form(target_path: &str) -> Result<HttpRequestTarget, HttpParsingError> {
+        lazy_static! {
+            static ref AUTHORITY_FORM_REGEX: Regex = Regex::new(r"^((?:\w|\.)+(?::\d+)?)$").unwrap();
+        }
+        let captures = match AUTHORITY_FORM_REGEX.captures(target_path) {
+            Some(captures) => captures,
+            None => return Err(HttpParsingError::InvalidTargetFormat),
+        };
+
+        let authority = String::from(&captures[1]);
+
+        Ok(HttpRequestTarget::AuthorityForm{authority})
     }
 
     fn parse_http_version(http_version: &str) -> Result<HttpVersion, HttpParsingError> {
