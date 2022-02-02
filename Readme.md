@@ -33,8 +33,9 @@ cargo run -- --source ./example --debug
 - [x] Move ThreadConfig to Box or Rc
 - [x] Fix authority form starting with `h`
 - [x] Catch responses to server with `unknown` response (see RFC7230, 3.1)
-- [ ] Incrementally fetch header (header is not just ignored at this point)
+- [x] Incrementally fetch header (header is not just ignored at this point)
 - [ ] Add propper semantic handling of headers
+- [ ] Return 400 Error for invalid request, don't just close connection
 - [ ] add autocompletion
 - [ ] add a help page!
 

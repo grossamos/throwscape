@@ -31,6 +31,10 @@ pub fn run(config: Arc<Config>, listener: TcpListener) {
                 }
             };
 
+            if config.is_in_debug_mode {
+                println!("{}", request.to_string());
+            }
+
             let response = HttpResponse::new(request, &config);
             match response.send(&mut stream) {
                 Ok(_) => {}

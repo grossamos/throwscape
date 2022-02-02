@@ -27,6 +27,7 @@ pub enum HttpParsingError {
     InvalidMethodFormat,
     InvalidTargetFormat,
     InvalidVersionFormat,
+    InvalidHeaderFormat,
     TcpIssue(),
     UnknownMethod,
     UnknownScheme,
@@ -98,6 +99,7 @@ pub struct HttpRequest {
     pub method: HttpMethod,
     pub request_target: HttpRequestTarget,
     pub meta_data: HttpConnectionMetaData,
+    pub headers: Vec<HttpHeader>,
     _content: Option<String>,
 }
 
@@ -105,17 +107,10 @@ pub struct HttpRequest {
 impl HttpRequest {
     pub fn new(stream: &mut TcpStream, config: &Config) -> Result<HttpRequest, HttpParsingError> {
         stream.set_read_timeout(Some(config.timeout)).unwrap();
-
         let mut buffered_reader = BufReader::new(stream);
 
-        let mut request_line_buffer = String::new();
-
-        match buffered_reader.read_line(&mut request_line_buffer) {
-            Err(_) | Ok(0) => return Err(HttpParsingError::TcpIssue()),
-            _ => {},
-        }
-
-        let (method, request_target, http_version) = Self::parse_request_line(&request_line_buffer)?;
+        let (method, request_target, http_version) = Self::parse_request_line(&mut buffered_reader)?;
+        let headers = Self::parse_headers(&mut buffered_reader)?;
 
         Ok(HttpRequest {
             method,
@@ -123,23 +118,30 @@ impl HttpRequest {
             meta_data: HttpConnectionMetaData {
                 http_version,
             },
+            headers,
             _content: None,
         })
         
     }
     
-    fn parse_request_line(request_line: &str) -> Result<(HttpMethod, HttpRequestTarget, HttpVersion), HttpParsingError> {
-        let mut lines = request_line.split(" ");
+    fn parse_request_line(buffered_reader: &mut BufReader<&mut TcpStream>) -> Result<(HttpMethod, HttpRequestTarget, HttpVersion), HttpParsingError> {
+        let mut request_line_buffer = String::new();
+        match buffered_reader.read_line(&mut request_line_buffer) {
+            Err(_) | Ok(0) => return Err(HttpParsingError::TcpIssue()),
+            _ => {},
+        }
+        
+        let mut elements = request_line_buffer.split(" ");
 
-        let method = match lines.next() {
+        let method = match elements.next() {
             Some(method_string) => Self::parse_method(method_string),
             None => return Err(HttpParsingError::InvalidMethodFormat),
         };
-        let target = match lines.next() {
+        let target = match elements.next() {
             Some(target_path_string) => Self::parse_target_path(target_path_string)?,
             None => return Err(HttpParsingError::InvalidTargetFormat),
         };
-        let version = match lines.next() {
+        let version = match elements.next() {
             Some(version_string) => Self::parse_http_version(version_string.trim_end())?,
             None => return Err(HttpParsingError::InvalidVersionFormat),
         };
@@ -265,6 +267,45 @@ impl HttpRequest {
         let minor = captures[1].parse::<u8>().unwrap();
 
         Ok(HttpVersion {major, minor})
+    }
+
+
+    fn parse_headers(buffered_reader: &mut BufReader<&mut TcpStream>) -> Result<Vec<HttpHeader>, HttpParsingError> {
+        lazy_static!{
+            // ignoring obs-folds as specified within Http/1.1 spec
+            static ref HEADER_REGEX: Regex = Regex::new(r"^([^:[:space:]]+):(.+)$").unwrap();
+        }
+        
+        let mut headers = vec![];
+
+        loop {
+            let mut request_line_buffer = String::new();
+            match buffered_reader.read_line(&mut request_line_buffer) {
+                Err(_) | Ok(0) => return Err(HttpParsingError::TcpIssue()),
+                _ => {},
+            }
+            // Remove trailing "\r\n"
+            let request_line = &request_line_buffer[0..request_line_buffer.len() - 2];
+            
+            // catch end of header and continue
+            if request_line.len() == 0 {
+                break;
+            }
+
+            let captures = match HEADER_REGEX.captures(request_line) {
+                Some(captures) => captures,
+                None => return Err(HttpParsingError::InvalidHeaderFormat),
+            };
+
+            let field_name = String::from(&captures[1]);
+            let field_value = String::from(&captures[2]);
+
+            // TODO: potentially list-concatenate headers as in rfc7230
+
+            headers.push(HttpHeader { field_name, field_value })
+        }
+        
+        Ok(headers)
     }
 
 }
