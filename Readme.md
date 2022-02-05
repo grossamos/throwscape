@@ -1,7 +1,7 @@
-# Ultrascape
+# Throwscape
 
 ## Description
-Ultrascape is an ultra cool webserver written in rust. 
+Throwscape is an ultra cool webserver written in rust. 
 Its main goal is to create a simple webserver that can be configured and run straigt from the command line. 
 No configuration files or complicated setup procedures required.
 
@@ -10,9 +10,9 @@ No configuration files or complicated setup procedures required.
 For development purposes, the examples directory includes a couple of webpages that one can use for testing.
 In order to get started with the project run:
 ```bash
-git clone https://github.com/grossamos/ultrascape.git
+git clone https://github.com/grossamos/throwscape.git
 
-cd ./ultrascape
+cd ./throwscape
 
 cargo run -- --source ./example --debug
 ```
