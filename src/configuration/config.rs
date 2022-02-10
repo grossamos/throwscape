@@ -102,7 +102,7 @@ mod tests {
         const SOURCE_FOLDER: &str = "./example";
 
         let args = [
-            String::from("ultrascape"),
+            String::from("throwscape"),
             String::from("--port"), PORT.to_string(),
             String::from("--timeout"), TIMEOUT.to_string(),
             String::from("--source"), SOURCE_FOLDER.to_string(),

@@ -1,5 +1,5 @@
 use std::{net::{TcpListener, SocketAddr}, process, env, sync::Arc};
-use ultrascape::configuration::Config;
+use throwscape::configuration::Config;
 
 fn main() {
     // retrieve configuration
@@ -16,7 +16,7 @@ fn main() {
     let addr = SocketAddr::from(([0, 0, 0, 0], config.port));
 
     if let Ok(listener) = TcpListener::bind(addr) {
-        ultrascape::run(Arc::new(config), listener);
+        throwscape::run(Arc::new(config), listener);
     } else {
         eprintln!("Could not bind to port");
         process::exit(1);
