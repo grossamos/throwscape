@@ -12,6 +12,7 @@ pub mod scheduler;
 pub fn run(config: Arc<Config>, listener: TcpListener) {
     let pool = ThreadPool::new(4);
 
+    println!("Throwscape listening on port {}", config.port);
     for stream in listener.incoming() {
         let mut stream = match stream {
             Ok(stream) => stream,

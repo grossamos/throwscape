@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  throwscape:
+    image: grossamos/throwscape
+    ports:
+      - "80:80"
+    command: 
+      - "--source /http"
+    volumes:
+      ./example:/http

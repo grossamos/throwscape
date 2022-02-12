@@ -7,6 +7,9 @@ In our minds you shouldn't have to mess around creating docker images and config
 
 ## Setup
 Currently throwscape is not yet available on dockerhub (See the documentation below on details how to run it).
+```bash
+docker run -d -p 8080:8080 grossamos/throwscape:latest
+```
 
 ### Configuration
 TBD
@@ -22,4 +25,18 @@ cd ./throwscape
 
 cargo run -- --source ./example --debug
 ```
+
+### Building Throwscape
+In order to build throwscape (ex. for use in a different container technology) run the following command:
+
+```bash
+cargo build --release --target x86_64-unknown-linux-musl
+```
+
+If you recive an error about musl missing, you can install it using rustup:
+```bash
+rustup target add x86_64-unknown-linux-musl
+```
+
+The added flags ensure that the binary is statically compiled (including the c-library, which is usally dynamically linked in rust)
 

@@ -20,12 +20,15 @@ Aside from issues, this file contains a rough road map for future development of
 - [x] Fix authority form starting with `h`
 - [x] Catch responses to server with `unknown` response (see RFC7230, 3.1)
 - [x] Incrementally fetch header (header is not just ignored at this point)
+- [x] create Docker image
+- [ ] update readme with user instructions
+- [ ] create readme for dockerhub
+- [ ] Change default serve directory to something usefull
 - [ ] Return 400 Error for invalid request, don't just close connection
 - [ ] Add Connection management (rfc7230 chapter 6)
 - [ ] limit the number of connections a single client can have to 7 (and make it configurable)
 - [ ] add content-type, encoding, location and possibly language (language should prlly be configurable)
 - [ ] add (highly optional) ip loggin to stdout as config parameter
-- [ ] create Docker image
 - [ ] add a help page!
 
 ### Current Defects
