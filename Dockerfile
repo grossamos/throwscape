@@ -8,5 +8,5 @@ EXPOSE 8080
 
 ENTRYPOINT ["/throwscape"]
 
-CMD ["--port", "8080"]
+CMD ["--source", "/source"]
 

@@ -7,7 +7,7 @@
 </p>
 <h1></h1>
 <p align="center">
-  A static webserver designed for containers and written in rust'
+  A static webserver designed for containers and written in rust
   <br />
   <a href="#about-throwscape">About throwscape</a>
   -
