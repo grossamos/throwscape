@@ -23,6 +23,7 @@ Aside from issues, this file contains a rough road map for future development of
 - [x] create Docker image
 - [ ] update readme with user instructions
 - [ ] create readme for dockerhub
+- [ ] create default homepage
 - [ ] Change default serve directory to something usefull
 - [ ] Return 400 Error for invalid request, don't just close connection
 - [ ] Add Connection management (rfc7230 chapter 6)

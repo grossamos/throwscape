@@ -3,12 +3,15 @@
 
 <svg
    width="297mm"
-   height="210mm"
-   viewBox="0 0 297 210"
+   height="86mm"
+   viewBox="0 0 297 86"
    version="1.1"
    id="svg5"
    inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
    sodipodi:docname="Throwscape.svg"
+   inkscape:export-filename="/home/amos/Documents/Office/Inkscape/Throwscape.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -42,18 +45,18 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:38.7315px;line-height:1.25;font-family:'Fira Mono';-inkscape-font-specification:'Fira Mono, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#373e48;fill-opacity:1;stroke:none;stroke-width:0.968288"
-       x="35.799644"
-       y="136.21806"
+       x="33.38028"
+       y="71.739708"
        id="text18183"><tspan
          sodipodi:role="line"
          id="tspan18181"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:38.7315px;font-family:'Fira Mono';-inkscape-font-specification:'Fira Mono, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#373e48;stroke-width:0.968288"
-         x="35.799644"
-         y="136.21806">HROWSCAPE</tspan></text>
+         x="33.38028"
+         y="71.739708">HROWSCAPE</tspan></text>
     <g
        id="g35866"
        style="fill:#1c1f24"
-       transform="translate(22.003381,1.549328)">
+       transform="translate(19.164703,-62.929028)">
       <path
          d="M 0.35008831,137.85115 V 102.14053 H -7.8741755 V 94.673769 H 0.35008831 V 81.688089 L 10.089348,80.497735 v 14.176034 l 235.258572,1.738893 -7.62413,4.177578 -227.634442,1.55029 v 35.60241 z"
          id="path15976"
