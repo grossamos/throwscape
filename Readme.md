@@ -1,9 +1,7 @@
 <!-- Header -->
 <br />
 <p align="center">
-  <a href="https://firefly-iii.org/">
-    <img src="https://raw.githubusercontent.com/grossamos/throwscape/master/.github/images/Throwscape.svg" alt="Throwscape" width="500" height="100">
-  </a>
+  <img src="https://raw.githubusercontent.com/grossamos/throwscape/master/.github/images/Throwscape.svg" alt="Throwscape" width="500" height="100">
 </p>
 <h1></h1>
 <p align="center">
