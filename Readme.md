@@ -1,7 +1,7 @@
 <!-- Header -->
 <br />
 <p align="center">
-  <img src="https://raw.githubusercontent.com/grossamos/throwscape/master/.github/images/Throwscape.svg" alt="Throwscape" width="500" height="100">
+  <img src="https://raw.githubusercontent.com/grossamos/throwscape/master/.github/images/Throwscape.png" alt="Throwscape" width="500" height="100">
 </p>
 <h1></h1>
 <p align="center">
